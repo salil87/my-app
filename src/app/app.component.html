@@ -18,7 +18,7 @@
    </thead>
    <tbody>
      <tr *ngFor="let item of groups">
-       <td>{{item}} </td>
+       <td>{{item}}</td>
        <td>{{groupedData[item].filter(function(o){return o.IsEngagementComplete=="Yes"}).length}}</td>
      </tr>
    </tbody>
