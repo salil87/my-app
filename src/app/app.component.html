@@ -1,0 +1,33 @@
+ 
+ <table>
+   <thead>
+     <tr>
+       <th>
+         Eng Type
+       </th>
+       <th>
+         Engagement Complete
+       </th>
+       <th>
+         Testing in Progress
+       </th>
+       <th>
+         Testing Complete Engagement is not
+       </th>
+     </tr>
+   </thead>
+   <tbody>
+     <tr *ngFor="let item of groups">
+       <td>{{item}} </td>
+       <td>{{groupedData[item].filter(function(o){return o.IsEngagementComplete=="Yes"}).length}}</td>
+     </tr>
+   </tbody>
+ </table>
+ 
+ 
+ <ul>
+    <li *ngFor="let d of data">
+        {{ d.Tester }}
+      </li>
+
+    </ul>
