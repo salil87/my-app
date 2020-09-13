@@ -10,11 +10,9 @@ import * as color from 'color';
 })
 export class AppComponent {
   title = 'my-app';
-  value: number = 0;
   lodash: any;
   data: any[];
   groups: any[];
-  groupedData: any[];
   testerselected: string = '';
   max: number;
 
@@ -35,31 +33,6 @@ export class AppComponent {
         );
       });
     });
-
-
-    this.groupedData = _.groupBy(this.data, function (o) {
-      return o.EngType;
-    });
-  }
-
-  getTestingStatusTotal(Group: string, TestingStatus: string): any {
-    switch (TestingStatus) {
-      case 'EngComplete':
-        return this.lodash.filter(this.groupedData[Group], function (o) {
-          return o.IsEngagementComplete == 'Yes';
-        }).length;
-      case 'InProgress':
-        return this.lodash.filter(this.groupedData[Group], function (o) {
-          return o.IsEngagementComplete == 'No' && o.IsTestingComplete == 'No';
-        }).length;
-
-      case 'TestingCompleteEngagementNot':
-        return this.lodash.filter(this.groupedData[Group], function (o) {
-          return o.IsEngagementComplete == 'No' && o.IsTestingComplete == 'Yes';
-        }).length;
-      default:
-        return 0;
-    }
   }
 
   sortAlphaNum(a, b) {
@@ -104,7 +77,9 @@ export class AppComponent {
   }
 
   GetTesters() {
-    let data = _.map(_.uniqBy(this.data, 'Tester'), 'Tester').sort(this.sortAlphaNum);
+    let data = _.map(_.uniqBy(this.data, 'Tester'), 'Tester').sort(
+      this.sortAlphaNum
+    );
 
     return data;
   }
@@ -145,7 +120,6 @@ export class AppComponent {
   }
 
   getShadeofBlue(ratio: number) {
-
     return color('rgb(200, 220, 255)')
       .darken(ratio / this.max)
       .hex();
@@ -174,8 +148,12 @@ export class AppComponent {
 
   setMyStyle() {
     let styles = {
-      'background-image': ' linear-gradient(to right,'+this.getShadeofBlue(0)+','+this.getShadeofBlue(this.max)+')',
-
+      'background-image':
+        ' linear-gradient(to right,' +
+        this.getShadeofBlue(0) +
+        ',' +
+        this.getShadeofBlue(this.max) +
+        ')',
     };
     return styles;
   }
