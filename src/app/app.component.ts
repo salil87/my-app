@@ -87,13 +87,13 @@ export class AppComponent {
     console.log(list);
 
     let data = {
-      EngagementComplete: _.filter(list, function (o) {
+      AEngagementComplete: _.filter(list, function (o) {
         return o.IsEngagementComplete=="Yes";
       }).length,
-      TestingInProgress: _.filter(list, function (o) {
+      BTestingInProgress: _.filter(list, function (o) {
         return o.IsTestingComplete=="No";
       }).length,
-      TestingCompleteEngagementIsNot: _.filter(list, function (o) {
+      CTestingCompleteEngagementIsNot: _.filter(list, function (o) {
         return o.IsTestingComplete=="Yes" && o.IsEngagementComplete=="No";
       }).length,
     };

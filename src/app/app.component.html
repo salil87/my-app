@@ -36,12 +36,21 @@
 <table class='table table-striped'>
   <thead>
     <tr>
-      <th>Tester</th>
+      <th rowspan="2">Tester</th>
       <ng-container *ngFor="let item of groups">
+       <th colspan="3">{{item}}</th>
+      </ng-container>
+      </tr>
+      <tr>
+      <ng-container *ngFor="let item of groups">
+       
         <th>Engagement Complete</th>
         <th>Testing in Progress</th>
         <th>Testing Complete Engagement Not</th>
+      
       </ng-container>
+      
+
     </tr>
   </thead>
 
