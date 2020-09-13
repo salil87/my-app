@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DataService } from './app-service';
-import * as XLSX from 'xlsx';
-import { Data } from '@angular/router';
 import * as _ from 'lodash';
+import * as color from 'color';
 
 @Component({
   selector: 'app-root',
@@ -16,35 +15,31 @@ export class AppComponent {
   data: any[];
   groups: any[];
   groupedData: any[];
-  testerselected :string="";
+  testerselected: string = '';
+  max: number;
 
   constructor(private dataService: DataService) {
-    this.testerselected='';
+    this.testerselected = '';
     this.lodash = _;
     this.data = this.dataService.getData();
-    console.log(this.data);
-    this.groups = _.uniq(_.map(this.data, 'EngType'));
-    console.log(this.groups);
+    this.groups = _.uniq(_.map(this.data, 'EngType')).sort();
+    this.max = 0;
+    this.GetTesters().forEach((element) => {
+      this.groups.forEach((grp) => {
+        var data = this.GetTestingStatistics(element, grp);
+        this.max = Math.max(
+          data.AEngagementComplete,
+          data.BTestingInProgress,
+          data.CTestingCompleteEngagementIsNot,
+          this.max
+        );
+      });
+    });
+
+
     this.groupedData = _.groupBy(this.data, function (o) {
       return o.EngType;
     });
-    console.log(this.groupedData);
-    console.log(
-      _.filter(this.groupedData['NPT'], function (o) {
-        return o.IsEngagementComplete == 'Yes';
-      }).length
-    );
-    console.log(
-      _.filter(
-        [
-          { user: 'barney', age: 36, active: true },
-          { user: 'fred', age: 40, active: false },
-        ],
-        function (o) {
-          return !o.active;
-        }
-      ).length
-    );
   }
 
   getTestingStatusTotal(Group: string, TestingStatus: string): any {
@@ -71,132 +66,117 @@ export class AppComponent {
     return a.localeCompare(b, 'en', { numeric: true });
   }
 
-  GetTestingStatus(tester: string, group: string) {
-    console.log(this);
-    let testerselct =this.testerselected;
+  GetTestingStatistics(tester: string, group: string) {
+    let testerselct = this.testerselected;
     let list = _.filter(this.data, function (o) {
-      return (o.EngType == group && (_.isEmpty(tester) ? (_.isEmpty(testerselct)?true:testerselct==o.Tester): tester == o.Tester));
+      return (
+        (_.isEmpty(group) ? true : o.EngType == group) &&
+        (_.isEmpty(tester)
+          ? _.isEmpty(testerselct)
+            ? true
+            : testerselct == o.Tester
+          : tester == o.Tester)
+      );
     });
-
-    console.log('get testing status');
-    console.log(this.testerselected);
-    
-
-    console.log(_.isEmpty(tester));
-    console.log('list for tester: '+ tester + ' group:'+group);
-    console.log(list);
 
     let data = {
       AEngagementComplete: _.filter(list, function (o) {
-        return o.IsEngagementComplete=="Yes";
+        return o.IsEngagementComplete == 'Yes';
       }).length,
       BTestingInProgress: _.filter(list, function (o) {
-        return o.IsTestingComplete=="No";
+        return o.IsTestingComplete == 'No';
       }).length,
       CTestingCompleteEngagementIsNot: _.filter(list, function (o) {
-        return o.IsTestingComplete=="Yes" && o.IsEngagementComplete=="No";
+        return o.IsTestingComplete == 'Yes' && o.IsEngagementComplete == 'No';
       }).length,
+      DTotal: list.length,
     };
 
-    
-
-    console.log('Testing Status');
-    console.log(data);
     return data;
   }
 
-  clickedTester(tester:string)
-  {
-    console.log('tester:'+tester);
-    console.log('selectedtester:'+this.testerselected);
-    if(this.testerselected==tester)
-    {
-      console.log('same');
-      this.testerselected="";
+  clickedTester(tester: string) {
+    if (this.testerselected == tester) {
+      this.testerselected = '';
+    } else {
+      this.testerselected = tester;
     }
-    else{
-      this.testerselected=tester;
-    }
-    
   }
 
   GetTesters() {
-    let data = _.map(_.uniqBy(this.data,'Tester'),'Tester')
+    let data = _.map(_.uniqBy(this.data, 'Tester'), 'Tester').sort(this.sortAlphaNum);
 
-    console.log('Testers');
-    console.log(data);
     return data;
   }
 
-  GetTesterData() {
-    let data = _.chain(this.data)
-      .groupBy('Tester')
-      .map((value, key) => ({
-        Tester: key,
-        Data: {
-          NPTTotal: _.filter(value, function (o) {
-            return o.EngType == 'NPT';
-          }).length,    
-        },
-      }))
-      .value();
-      
-    console.log(data);
-    return data;
-  }
-
-  GetDaysInTesting()
-  {
+  GetDaysInTesting() {
     let tester = this.testerselected;
 
     let list = _.filter(this.data, function (o) {
-      return (_.isEmpty(tester) ? true: tester == o.Tester);
+      return _.isEmpty(tester) ? true : tester == o.Tester;
     });
 
-    return (_.sumBy(list,function(o){return o.DaysInTestingStatus})/list.length).toFixed(2);
-
-
+    return (
+      _.sumBy(list, function (o) {
+        return o.DaysInTestingStatus;
+      }) / list.length
+    ).toFixed(2);
   }
-  GetDeviation()
-  {
+  GetDeviation() {
     let tester = this.testerselected;
 
     let list = _.filter(this.data, function (o) {
-      return (_.isEmpty(tester) ? true: tester == o.Tester);
+      return _.isEmpty(tester) ? true : tester == o.Tester;
     });
 
-    return (_.sumBy(list,function(o){return o['Deviation of D&E']})/list.length).toFixed(2);
-
-
-
-    
-
-  
-  
-  
-  
+    return (
+      _.sumBy(list, function (o) {
+        return o['Deviation of D&E'];
+      }) / list.length
+    ).toFixed(2);
   }
 
-
-  getColor(tester:string)
-  {
-    if(this.testerselected==tester)
-    {
+  getColor(tester: string) {
+    if (this.testerselected == tester) {
       return 'grey';
-    }
-    else{
+    } else {
       return 'white';
     }
   }
 
-  getOpacity(tester:string)
-  {
-    if(_.isEmpty(this.testerselected) || this.testerselected==tester)
-    {
+  getShadeofBlue(ratio: number) {
+
+    return color('rgb(200, 220, 255)')
+      .darken(ratio / this.max)
+      .hex();
+  }
+
+  getOpacity(tester: string) {
+    if (_.isEmpty(this.testerselected) || this.testerselected == tester) {
       return 1;
-    }
-    else{
+    } else {
       return 0.5;
     }
+  }
+
+  getTotalColor(key: string) {
+    switch (key) {
+      case 'AEngagementComplete':
+        return 'green';
+      case 'BTestingInProgress':
+        return 'red';
+      case 'CTestingCompleteEngagementIsNot':
+        return 'orange';
+      default:
+        return '';
+    }
+  }
+
+  setMyStyle() {
+    let styles = {
+      'background-image': ' linear-gradient(to right,'+this.getShadeofBlue(0)+','+this.getShadeofBlue(this.max)+')',
+
+    };
+    return styles;
   }
 }
