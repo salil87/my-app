@@ -1,1 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
+.circle {
+    background:grey;
+    border-radius: 200px;
+    color: white;
+    height: 100px;
+    font-weight: bold;
+    width: 100px;
+    display: table;
+    margin: 20px auto;
+}
+
+.circletext{
+    text-align: center;
+    margin-top: 30px;
+}
